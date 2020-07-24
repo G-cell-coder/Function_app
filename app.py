@@ -65,10 +65,6 @@ def execute():
 			continue
 
 """
-#			client = Client("AC887b04f4086795cf565f1caa8e177af8", "d4ac1ba3f982fc1b5756ac48b6406ce5")		
-#			client.messages.create(to=df.iloc[n-2,0],
-#		                       from_="14692029195",
-#	               		       body=sheet.cell(n,11).value)
 			n= n + 1
 			continue
 		
