@@ -28,68 +28,37 @@ col_di = {}
 for i,j in zip(range(0,len(column)),column):
 	col_di[i]=j
 
-df = pd.DataFrame(data[1:])
-df = df.rename(columns=col_di)
+df = pd.DataFrame(data)
+df.set_index(0, inplace=True)
+df = df.transpose()
 df.set_index(['Name'], inplace= True)
-print(df)
+df = df.T
+print(len(df))
 
-def stopwatch(r,sec):
-	while sec:
-		minn, secc = divmod(sec, 60)
-		timeformat = '00:{:02d}:{:02d}'.format(minn, secc)
-		sheet.update_cell(r,6,timeformat)
-		print(timeformat, end='\r')
-		t.sleep(1)
-		sec -= 1
-	
-#@app.route("/")
+
+@app.route('/')
 def execute():
-	i = 2
-	print("INSIDE EXECUTE")
-	n = 2
-	while n < (len(df)+2):
-		print(sheet.cell(n,6).value)
-		if (sheet.cell(n,6).value == "00:00:01"):
-			print(df.iloc[n-2,0])
-			print("Sending SMS the data:{} and for User {}".format(sheet.cell(n,11).value,df.iloc[n-2]))
-			sheet.update_cell(n,6, "TIMEOUT")
-			timestamp = sheet.cell(n,8).value
-			hh, mm , ss = map(int, timestamp.split(':'))
-			tt= ss + 60*(mm + 60*hh)
-			pay = tt * 0.50
-			print("PAY FOR THE TIME(Secs):{} and TOTAL:{}".format(tt,pay))
-			n = n + 1
-			continue
-		else:
-			n = n+1
-			continue
+        for i in range(2,len(df)+2):
+                print(df.iloc[i-2,0],sheet.cell(i,7).value, sheet.cell(i,5).value)
+                if (sheet.cell(i,5).value != "TIMEOUT") & (sheet.cell(i,7).value != "0:00:00"):
+                        print("SENDING SMS")
+                        client.messages.create(to=df.iloc[i-2,0],
+                                           from_="<TWILIO MOBILE NUMBER>",
+                                           body="Penalty of "+sheet.cell(i,9).value+" should be paid while billing")
+                        sheet.update_cell(i,5, "TIMEOUT")
+                        i= i +1
 
-"""
-			n= n + 1
-			continue
-		
-		else:
-			n = n +1
-			continue
+                else:
+                        i= i+1
+                        print("SMS NOT SENT")
 
-
-
-
-def calculate_pay(uh,um, us, uhr):
-       	hours_minutes_seconds = timedelta(hours= uh, minutes = um, seconds = us)
-        time_in_decimal_format = round(uh * (1/1) + um * (1/60) + us * (1/3600),2)
-       	pay = time_in_decimal_format * uhr
-#	    return ("Number of Hours in decimal form: {}. Total pay: {}".format(hours_minutes_seconds, pay))
-#    	    return pay        
-"""
-
-
-
+                continue
 
 #CODE SNIPPET TO HANDLE THE INCOMMING SMS ON EXTENTION
 if __name__ == "__main__":
-#	app.run()	
-	execute()
+#        app.run()
+        client = Client("<TWILIO ACCOUNT ID>", "<AUTH TOKEN>")
+        execute()
 
 
 
